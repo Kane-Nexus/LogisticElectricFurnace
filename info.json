@@ -1,0 +1,10 @@
+{
+	"name": "Logistic_Furnace",
+	"version": "0.1.0",
+	"title": "Logistic Furnace",
+	"author": "Kane.Nexus",
+	"contact": "",
+	"homepage": "",
+	"description": "This mod adds an electric furnace that automatically connects to the logistic network to automate production.",
+	"factorio_version": "0.14"
+}
