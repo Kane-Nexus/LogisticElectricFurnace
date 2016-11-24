@@ -3,7 +3,7 @@ data:extend({
  {
     type = "furnace",
     name = "logistic-electric-furnace",
-    icon = "__base__/graphics/icons/electric-furnace.png",
+    icon = "__Logistic_Furnace__/graphics/icons/logistic-electric-furnace.png",
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 1, result = "logistic-electric-furnace"},
     max_health = 200,
@@ -49,7 +49,7 @@ data:extend({
     },
     animation =
     {
-      filename = "__base__/graphics/entity/electric-furnace/electric-furnace-base.png",
+      filename = "__Logistic_Furnace__/graphics/entity/logistic-electric-furnace/logistic-electric-furnace-base.png",
       priority = "high",
       width = 129,
       height = 100,

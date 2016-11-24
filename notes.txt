@@ -1,9 +1,10 @@
 -- furnace
+craftable furnace - done
 request resources (20 iron, 20 copper, 20 stone by default)
 smelt requested resources
-	iron and copper 3.5 energy
-	steel from 5 iron ore (20 energy)
-	stone ??? energy
+	iron and copper (3.5 energy)
+	steel from 5 iron ore (21 energy)
+	stone (3.5 energy)
 provide resources
 --gui
 set auto-smelt limits

@@ -2,7 +2,7 @@ data:extend({
 {
     type = "technology",
     name = "logistic-material-processing",
-    icon = "__base__/graphics/technology/advanced-material-processing.png",
+    icon = "__Logistic_Furnace__/graphics/technology/logistic-material-processing64.png",
     effects =
     {
       {
