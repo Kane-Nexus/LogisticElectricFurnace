@@ -1,7 +1,3 @@
-require "util"
-require "defines"
-require "stdlib/entity/inventory"
-
 local on_chest_created = nil
 local on_chest_destroyed = nil
 
@@ -35,28 +31,24 @@ end)
 script.on_event(defines.events.on_built_entity, function(event)
 	local entity = event.created_entity
 	local player = game.players[event.player_index]
-	if entity.name == "logistic-electric-furnace" then
-		local direction = entity.direction
+	if entity.name == "logistic-electric-furnace-iron" or entity.name == "logistic-electric-furnace-copper" or entity.name == "logistic-electric-furnace-steel" or entity.name == "logistic-electric-furnace-brick" then
 		-- Don't want any duplicate dummy chests
 		removeDummy(entity.surface, "lef-passive-provider-chest", entity.position) 
 		removeDummy(entity.surface, "lef-requester-chest", entity.position)
-	end
-	if entity.name == "logistic-electric-furnace" then
-		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force)
-		insertDummyItem(entity.surface, "lef-requester-chest", entity.position, entity.force)
+		-- Create new chests
+		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force, entity.name)
+		insertDummyItem(entity.surface, "lef-requester-chest", entity.position, entity.force, entity.name)
 	end
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function(event)
 	local entity = event.created_entity
-	-- Don't want any duplicate dummy chests
-	removeDummy(entity.surface, "lef-passive-provider-chest", entity.position) 
-	removeDummy(entity.surface, "lef-requester-chest", entity.position) 
-	if entity.name == "logistic-electric-furnace" then
-		-- Replace vanilla electric furnace with logistic electric furnace
-		orderEntityDeconstruction(entity.surface, "electric-furnace", entity.position) 
-	end
-	if entity.name == "logistic-electric-furnace" then
+	local player = game.players[event.player_index]
+	if entity.name == "logistic-electric-furnace-iron" or entity.name == "logistic-electric-furnace-copper" or entity.name == "logistic-electric-furnace-steel" or entity.name == "logistic-electric-furnace-brick" then
+		-- Don't want any duplicate dummy chests
+		removeDummy(entity.surface, "lef-passive-provider-chest", entity.position) 
+		removeDummy(entity.surface, "lef-requester-chest", entity.position)
+		-- Create new chests
 		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force)
 		insertDummyItem(entity.surface, "lef-requester-chest", entity.position, entity.force)
 	end
@@ -64,28 +56,18 @@ end)
 
 script.on_event(defines.events.on_preplayer_mined_item, function(event)
 	local entity = event.entity
-	if (entity.type == "logistic-electric-furnace") then
-		emptyChests(entity.logistic-electric-furnace)
+	if (entity.type == "furnace") or (entity.name == "lef-passive-provider-chest") or (entity.name == "lef-requester-chest") then
+		-- syncChests(entity.furnace)
 		removeDummy(entity.surface, "lef-passive-provider-chest", entity.position)
 		removeDummy(entity.surface, "lef-requester-chest", entity.position)
-	end
-	if (entity.type == "lef-passive-provider-chest") then
-		emptyChests(entity.logistic-electric-furnace)
-		removeDummy(entity.surface, "logistic-electric-furnace", entity.position)
-		removeDummy(entity.surface, "lef-requester-chest", entity.position)
-	end
-	if (entity.type == "lef-requester-chest") then
-		emptyChests(entity.logistic-electric-furnace)
-		removeDummy(entity.surface, "lef-passive-provider-chest", entity.position)
-		removeDummy(entity.surface, "logistic-electric-furnace", entity.position)
 	end
 end)
 
 script.on_event(defines.events.on_robot_pre_mined, function(event) 
 	-- The dummy chest can't actually be robo-deconstructed, so we don't have to worry about it
 	local entity = event.entity
-	if entity.name == "logistic-electric-furnace" then
-		emptyChests(entity.logistic-electric-furnace)
+	if (entity.type == "furnace") or (entity.name == "lef-passive-provider-chest") or (entity.name == "lef-requester-chest") then
+		syncChests(entity.furnace)
 		removeDummy(entity.surface, "lef-passive-provider-chest", entity.position)
 		removeDummy(entity.surface, "lef-requester-chest", entity.position)
 	end
@@ -101,3 +83,47 @@ script.on_event(defines.events.on_entity_died, function(event)
 end)
 
 -- script.on_event(defines.events.on_train_changed_state, function(event)
+
+function syncChests(furnace)
+	for i = 1, #furnace.locomotives.front_movers do
+		syncLocoChest(furnace.locomotives.front_movers[i])
+	end
+	for i = 1, #furnace.locomotives.back_movers do
+		syncLocoChest(furnace.locomotives.back_movers[i])
+	end
+	for i = 1, #furnace.cargo_wagons do
+		local wagon = furnace.cargo_wagons[i]
+		if wagon.type == "cargo-wagon" then
+			prepareDeparture(wagon, "requester-chest-from-wagon")
+			prepareDeparture(wagon, "passive-provider-chest-from-wagon")
+			prepareDeparture(wagon, "active-provider-chest-from-wagon")
+			prepareDeparture(wagon, "storage-chest-from-wagon")
+			game.raise_event(on_chest_destroyed, {wagon_index=i, furnace=furnace})
+		end
+	end
+end
+
+function insertDummyItem(surface, chestName, chestPosition, chestForce, entityName)
+	local dummy = surface.create_entity({name = chestName, position = chestPosition, force = chestForce})
+	dummy.insert{name=chestName, count=1}
+	if chestName == "lef-requester-chest" then
+		if entityName == "logistic-electric-furnace-iron" then
+			dummy.set_request_slot({name="iron-ore", count=lefRequestedIron}, 1)
+		elseif entityName == "logistic-electric-furnace-copper" then
+			dummy.set_request_slot({name="copper-ore", count=lefRequestedCopper}, 1)
+		elseif entityName == "logistic-electric-furnace-steel" then
+			dummy.set_request_slot({name="iron-ore", count=lefRequestedSteel}, 1)
+		elseif entityName == "logistic-electric-furnace-brick" then
+			dummy.set_request_slot({name="stone", count=lefRequestedStone}, 1)
+		end 
+	end
+end
+
+function removeDummy(surface, dummyName, position)
+	local dummy = surface.find_entity(dummyName, position)
+	if dummy and dummy.valid then
+		dummy.destroy()
+		return true
+	end
+	return false
+end
