@@ -54,8 +54,8 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
 		removeDummy(entity.surface, "lef-passive-provider-chest", entity.position) 
 		removeDummy(entity.surface, "lef-requester-chest", entity.position)
 		-- Create new chests
-		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force)
-		insertDummyItem(entity.surface, "lef-requester-chest", entity.position, entity.force)
+		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force, entity.name)
+		insertDummyItem(entity.surface, "lef-requester-chest", entity.position, entity.force, entity.name)
 	end
 end)
 
@@ -105,13 +105,13 @@ function insertDummyItem(surface, chestName, chestPosition, chestForce, entityNa
 	dummy.insert{name=chestName, count=1}
 	if chestName == "lef-requester-chest" then
 		if entityName == "logistic-electric-furnace-iron" then
-			dummy.set_request_slot({name="iron-ore", count=lefRequestedIron}, 1)
+			dummy.set_request_slot({name = "iron-ore", count = lefRequestedIron}, 1)
 		elseif entityName == "logistic-electric-furnace-copper" then
-			dummy.set_request_slot({name="copper-ore", count=lefRequestedCopper}, 1)
+			dummy.set_request_slot({name = "copper-ore", count = lefRequestedCopper}, 1)
 		elseif entityName == "logistic-electric-furnace-steel" then
-			dummy.set_request_slot({name="iron-ore", count=lefRequestedSteel}, 1)
+			dummy.set_request_slot({name = "iron-ore", count = lefRequestedSteel}, 1)
 		elseif entityName == "logistic-electric-furnace-brick" then
-			dummy.set_request_slot({name="stone", count=lefRequestedStone}, 1)
+			dummy.set_request_slot({name = "stone", count = lefRequestedStone}, 1)
 		end 
 		table.insert(created_requesters, dummy)
 	elseif chestName == "lef-passive-provider-chest" then
