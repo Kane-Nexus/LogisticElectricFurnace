@@ -4,6 +4,7 @@ if not on_chest_created then on_chest_created = nil end
 if not on_chest_destroyed then on_chest_destroyed = nil end
 if not created_requesters then created_requesters = {} end
 if not created_providers then created_providers = {} end
+if not created_furnace then created_furnace = {} end
 if not created_furnace then created_furnace = 0 end
 
 
@@ -42,9 +43,10 @@ script.on_event(defines.events.on_built_entity, function(event)
 		removeDummy(entity.surface, "lef-passive-provider-chest", entity.position) 
 		removeDummy(entity.surface, "lef-requester-chest", entity.position)
 		-- Create new chests
-		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force, entity.name)
 		insertDummyItem(entity.surface, "lef-requester-chest", entity.position, entity.force, entity.name)
+		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force, entity.name)
 	end
+	table.insert(created_furnace, entity)
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function(event)
@@ -54,9 +56,10 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
 		removeDummy(entity.surface, "lef-passive-provider-chest", entity.position) 
 		removeDummy(entity.surface, "lef-requester-chest", entity.position)
 		-- Create new chests
-		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force, entity.name)
 		insertDummyItem(entity.surface, "lef-requester-chest", entity.position, entity.force, entity.name)
+		insertDummyItem(entity.surface, "lef-passive-provider-chest", entity.position, entity.force, entity.name)
 	end
+	table.insert(created_furnace, entity)
 end)
 
 script.on_event(defines.events.on_preplayer_mined_item, function(event)
@@ -88,7 +91,7 @@ script.on_event(defines.events.on_entity_died, function(event)
 end)
 
 function syncChests(furnace)
-	for i = 1, #furnace.cargo_wagons do
+	for i = 1, created_requesters[i] do
 		local wagon = furnace.cargo_wagons[i]
 		if wagon.type == "cargo-wagon" then
 			prepareDeparture(wagon, "requester-chest-from-wagon")
@@ -154,7 +157,6 @@ script.on_event(defines.events.on_tick, function(event)
 			if k ~= nil and tonumber(k) > 0 and interval ~= nil and tonumber(interval) > 0 and tick ~= nil and tonumber(tick) > 0 then
 				if (tonumber(k) + tonumber(tick)) % tonumber(interval) == 0 then
 					-- syncChests(k)
-					local foo = "bar"
 				end
 			end  
 		end
